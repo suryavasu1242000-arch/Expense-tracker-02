@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Billing - Payment</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">🍽️ Restaurant Billing</div>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">Billing</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <div class="payment-container">
+            <div class="payment-section">
+                <h2>Order Summary</h2>
+                <div id="orderSummary" class="order-summary-payment"></div>
+            </div>
+
+            <div class="payment-section">
+                <h2>Payment Method</h2>
+                <div class="payment-options">
+                    <div class="radio-group">
+                        <input type="radio" id="cardPayment" name="paymentMethod" value="card" checked>
+                        <label for="cardPayment">💳 Card Payment</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="cashPayment" name="paymentMethod" value="cash">
+                        <label for="cashPayment">💵 Manual Payment (Cash)</label>
+                    </div>
+                    <div class="radio-group">
+                        <input type="radio" id="googlePayPayment" name="paymentMethod" value="googlepay">
+                        <label for="googlePayPayment">📱 Google Pay QR Payment</label>
+                    </div>
+                </div>
+
+                <div id="cardDetails" class="payment-form">
+                    <div class="form-group">
+                        <label for="cardName">Card Holder Name</label>
+                        <input type="text" id="cardName" placeholder="Name on card">
+                    </div>
+                    <div class="form-group">
+                        <label for="cardNumber">Card Number</label>
+                        <input type="text" id="cardNumber" placeholder="1234 5678 9012 3456" maxlength="19">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="expiry">Expiry Date</label>
+                            <input type="text" id="expiry" placeholder="MM/YY" maxlength="5">
+                        </div>
+                        <div class="form-group">
+                            <label for="cvv">CVV</label>
+                            <input type="text" id="cvv" placeholder="123" maxlength="3">
+                        </div>
+                    </div>
+                </div>
+
+                <div id="cashDetails" class="payment-form" style="display:none;">
+                    <div class="form-group">
+                        <label for="amountReceived">Amount Received (₹)</label>
+                        <input type="number" id="amountReceived" placeholder="0.00" min="0" step="0.01">
+                    </div>
+                    <div id="changeDisplay" class="change-display" style="display:none;">
+                        <p>Change to Return: <strong id="changeAmount">₹0</strong></p>
+                    </div>
+                </div>
+
+                <div id="googlePayDetails" class="payment-form" style="display:none;">
+                    <div class="googlepay-section">
+                        <h3>Google Pay QR Code</h3>
+                        <p class="googlepay-instructions">Scan this QR code with Google Pay to complete the payment</p>
+                        <div class="qr-code-container">
+                            <div id="qrCode" class="qr-code"></div>
+                        </div>
+                        <p class="googlepay-upi">UPI ID: <strong id="upiId">restaurant@googlepay</strong></p>
+                        <p class="googlepay-amount">Amount to Pay: <strong id="qrAmount">₹0</strong></p>
+                        <div class="googlepay-status">
+                            <input type="checkbox" id="paymentConfirm">
+                            <label for="paymentConfirm">I have completed the payment via Google Pay</label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="payment-actions">
+                    <button class="btn-secondary" onclick="goBackToBilling()">Back to Billing</button>
+                    <button class="btn-primary" onclick="completePayment()">Complete Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/cart.js"></script>
+    <script src="js/payment.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <script>
+        const currentUser = localStorage.getItem('currentUser');
+        if(!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('load', function() {
+            displayOrderSummary();
+        });
+
+        document.getElementById('cardPayment').addEventListener('change', function() {
+            document.getElementById('cardDetails').style.display = 'block';
+            document.getElementById('cashDetails').style.display = 'none';
+            document.getElementById('googlePayDetails').style.display = 'none';
+        });
+
+        document.getElementById('cashPayment').addEventListener('change', function() {
+            document.getElementById('cardDetails').style.display = 'none';
+            document.getElementById('cashDetails').style.display = 'block';
+            document.getElementById('googlePayDetails').style.display = 'none';
+        });
+
+        document.getElementById('googlePayPayment').addEventListener('change', function() {
+            document.getElementById('cardDetails').style.display = 'none';
+            document.getElementById('cashDetails').style.display = 'none';
+            document.getElementById('googlePayDetails').style.display = 'block';
+            generateGooglePayQR();
+        });
+
+        document.getElementById('amountReceived').addEventListener('input', function() {
+            const cart = getCart();
+            const total = cart.total;
+            const amount = parseFloat(this.value) || 0;
+            
+            if(amount >= total) {
+                const change = amount - total;
+                document.getElementById('changeDisplay').style.display = 'block';
+                document.getElementById('changeAmount').textContent = `₹${change.toFixed(2)}`;
+            } else {
+                document.getElementById('changeDisplay').style.display = 'none';
+            }
+        });
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function goBackToBilling() {
+            window.location.href = 'dashboard.html';
+        }
+    </script>
+</body>
+</html>

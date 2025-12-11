@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Billing - Dashboard</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">🍽️ Restaurant Billing</div>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link active">Billing</a>
+                <a href="menu-management.html" class="nav-link">Menu</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+                <a href="settings.html" class="nav-link">Settings</a>
+                <span class="user-info" id="userInfo"></span>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <div class="dashboard-content">
+            <div class="menu-section">
+                <h2>Menu Items</h2>
+                <div class="menu-grid" id="menuGrid"></div>
+            </div>
+
+            <div class="order-section">
+                <h2>Current Order</h2>
+                <div class="cart-items" id="cartItems">
+                    <p class="empty-cart">No items added</p>
+                </div>
+                
+                <div class="order-summary">
+                    <div class="summary-row">
+                        <span>Subtotal:</span>
+                        <span id="subtotal">₹0</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Tax (5%):</span>
+                        <span id="tax">₹0</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total:</span>
+                        <span id="total">₹0</span>
+                    </div>
+                </div>
+
+                <div class="order-actions">
+                    <button class="btn-secondary" onclick="clearCart()">Clear Cart</button>
+                    <button class="btn-primary" onclick="proceedToPayment()">Proceed to Payment</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/menu.js"></script>
+    <script src="js/cart.js"></script>
+    <script>
+        // Check if user is logged in
+        const currentUser = localStorage.getItem('currentUser');
+        if(!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        document.getElementById('userInfo').textContent = `Welcome, ${currentUser}!`;
+
+        // Initialize menu on page load
+        window.addEventListener('load', function() {
+            displayMenu();
+            updateCartDisplay();
+        });
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+
+        function proceedToPayment() {
+            const cart = getCart();
+            if(cart.items.length === 0) {
+                alert('Please add items to your order first!');
+                return;
+            }
+            window.location.href = 'payment.html';
+        }
+    </script>
+</body>
+</html>

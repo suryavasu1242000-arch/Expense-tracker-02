@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Billing - Settings</title>
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/dashboard.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <nav class="navbar">
+            <div class="navbar-brand">⚙️ Settings</div>
+            <div class="navbar-menu">
+                <a href="dashboard.html" class="nav-link">Billing</a>
+                <a href="menu-management.html" class="nav-link">Menu</a>
+                <a href="reports.html" class="nav-link">Reports</a>
+                <a href="settings.html" class="nav-link active">Settings</a>
+                <button class="btn-logout" onclick="logout()">Logout</button>
+            </div>
+        </nav>
+
+        <div class="settings-container">
+            <div class="settings-section">
+                <h2>User Profile</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="settingsUsername">Username</label>
+                        <input type="text" id="settingsUsername" readonly>
+                    </div>
+                    <div class="form-group">
+                        <label for="settingsEmail">Email</label>
+                        <input type="email" id="settingsEmail" readonly>
+                    </div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>Change Password</h2>
+                <div class="settings-form">
+                    <div class="form-group">
+                        <label for="currentPassword">Current Password</label>
+                        <input type="password" id="currentPassword" placeholder="Enter current password">
+                    </div>
+                    <div class="form-group">
+                        <label for="newPassword">New Password</label>
+                        <input type="password" id="newPassword" placeholder="Enter new password" minlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label for="confirmNewPassword">Confirm New Password</label>
+                        <input type="password" id="confirmNewPassword" placeholder="Confirm new password" minlength="6">
+                    </div>
+                    <button class="btn-primary" onclick="changePassword()">Update Password</button>
+                    <div id="passwordMsg" class="form-message"></div>
+                </div>
+            </div>
+
+            <div class="settings-section">
+                <h2>Danger Zone</h2>
+                <button class="btn-danger" onclick="deleteAccount()">Delete Account</button>
+                <p style="color: #666; margin-top: 10px;">This action cannot be undone.</p>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script>
+        const currentUser = localStorage.getItem('currentUser');
+        if(!currentUser) {
+            window.location.href = 'index.html';
+        }
+
+        window.addEventListener('load', function() {
+            const users = JSON.parse(localStorage.getItem('users')) || [];
+            const user = users.find(u => u.username === currentUser);
+            if(user) {
+                document.getElementById('settingsUsername').value = user.username;
+                document.getElementById('settingsEmail').value = user.email;
+            }
+        });
+
+        function changePassword() {
+            const currentPassword = document.getElementById('currentPassword').value;
+            const newPassword = document.getElementById('newPassword').value;
+            const confirmNewPassword = document.getElementById('confirmNewPassword').value;
+            const msg = document.getElementById('passwordMsg');
+
+            if(!currentPassword || !newPassword || !confirmNewPassword) {
+                msg.textContent = 'All fields are required';
+                msg.className = 'form-message error';
+                return;
+            }
+
+            if(!authenticateUser(currentUser, currentPassword)) {
+                msg.textContent = 'Current password is incorrect';
+                msg.className = 'form-message error';
+                return;
+            }
+
+            if(newPassword !== confirmNewPassword) {
+                msg.textContent = 'New passwords do not match';
+                msg.className = 'form-message error';
+                return;
+            }
+
+            let users = JSON.parse(localStorage.getItem('users')) || [];
+            const userIndex = users.findIndex(u => u.username === currentUser);
+            if(userIndex !== -1) {
+                users[userIndex].password = newPassword;
+                localStorage.setItem('users', JSON.stringify(users));
+                msg.textContent = 'Password updated successfully';
+                msg.className = 'form-message success';
+                document.getElementById('currentPassword').value = '';
+                document.getElementById('newPassword').value = '';
+                document.getElementById('confirmNewPassword').value = '';
+            }
+        }
+
+        function deleteAccount() {
+            if(confirm('Are you sure you want to delete your account? This action cannot be undone.')) {
+                let users = JSON.parse(localStorage.getItem('users')) || [];
+                users = users.filter(u => u.username !== currentUser);
+                localStorage.setItem('users', JSON.stringify(users));
+                localStorage.removeItem('currentUser');
+                alert('Account deleted successfully');
+                window.location.href = 'index.html';
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem('currentUser');
+            window.location.href = 'index.html';
+        }
+    </script>
+</body>
+</html>

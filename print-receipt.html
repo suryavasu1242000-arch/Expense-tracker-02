@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant Billing - Print Receipt</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Courier New', monospace;
+            background-color: white;
+            color: black;
+        }
+
+        .receipt-container {
+            width: 80mm;
+            margin: 0 auto;
+            padding: 10mm;
+            background: white;
+        }
+
+        .receipt-header {
+            text-align: center;
+            margin-bottom: 10mm;
+            border-bottom: 1px dashed black;
+            padding-bottom: 5mm;
+        }
+
+        .receipt-header h1 {
+            font-size: 16px;
+            margin-bottom: 2mm;
+        }
+
+        .receipt-header p {
+            font-size: 10px;
+            margin: 1mm 0;
+        }
+
+        .receipt-info {
+            font-size: 9px;
+            margin-bottom: 5mm;
+            border-bottom: 1px dashed black;
+            padding-bottom: 3mm;
+        }
+
+        .receipt-info-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 1mm 0;
+        }
+
+        .receipt-items {
+            font-size: 9px;
+            margin-bottom: 5mm;
+            border-bottom: 1px dashed black;
+            padding-bottom: 3mm;
+        }
+
+        .item-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2mm 0;
+        }
+
+        .item-name {
+            flex: 1;
+            max-width: 40mm;
+            word-wrap: break-word;
+        }
+
+        .item-qty {
+            width: 15mm;
+            text-align: center;
+        }
+
+        .item-price {
+            width: 20mm;
+            text-align: right;
+        }
+
+        .receipt-summary {
+            font-size: 9px;
+            margin-bottom: 5mm;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 1mm 0;
+        }
+
+        .total-row {
+            display: flex;
+            justify-content: space-between;
+            margin: 2mm 0;
+            font-weight: bold;
+            font-size: 11px;
+            border-top: 1px solid black;
+            border-bottom: 1px solid black;
+            padding: 2mm 0;
+        }
+
+        .payment-method {
+            text-align: center;
+            font-size: 9px;
+            margin: 3mm 0;
+            padding: 2mm;
+            background: #f0f0f0;
+        }
+
+        .receipt-footer {
+            text-align: center;
+            font-size: 8px;
+            margin-top: 5mm;
+            padding-top: 3mm;
+            border-top: 1px dashed black;
+        }
+
+        .qr-section {
+            text-align: center;
+            margin: 5mm 0;
+            padding: 3mm;
+            border: 1px dashed black;
+        }
+
+        .qr-section img {
+            max-width: 30mm;
+            height: auto;
+        }
+
+        .qr-label {
+            font-size: 8px;
+            margin-top: 2mm;
+        }
+
+        .thank-you {
+            text-align: center;
+            font-size: 10px;
+            font-weight: bold;
+            margin-top: 5mm;
+        }
+
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .receipt-container {
+                width: 80mm;
+                margin: 0;
+                padding: 0;
+            }
+            .print-button {
+                display: none;
+            }
+        }
+
+        .print-button {
+            display: block;
+            margin: 10px auto;
+            padding: 10px 20px;
+            background-color: #667eea;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .print-button:hover {
+            background-color: #5568d3;
+        }
+    </style>
+</head>
+<body>
+    <button class="print-button" onclick="window.print()">🖨️ Print Receipt</button>
+
+    <div class="receipt-container">
+        <!-- Receipt Header -->
+        <div class="receipt-header">
+            <h1>🍽️ RESTAURANT</h1>
+            <p>Billing Receipt</p>
+            <p id="receiptRestaurant"></p>
+        </div>
+
+        <!-- Receipt Info -->
+        <div class="receipt-info">
+            <div class="receipt-info-row">
+                <span>Transaction ID:</span>
+                <span id="receiptTxnId"></span>
+            </div>
+            <div class="receipt-info-row">
+                <span>Date:</span>
+                <span id="receiptDate"></span>
+            </div>
+            <div class="receipt-info-row">
+                <span>Time:</span>
+                <span id="receiptTime"></span>
+            </div>
+            <div class="receipt-info-row">
+                <span>Cashier:</span>
+                <span id="receiptUser"></span>
+            </div>
+        </div>
+
+        <!-- Items -->
+        <div class="receipt-items">
+            <div style="display: flex; justify-content: space-between; margin-bottom: 1mm; font-weight: bold; font-size: 8px;">
+                <span style="flex: 1; max-width: 40mm;">Item</span>
+                <span style="width: 15mm; text-align: center;">Qty</span>
+                <span style="width: 20mm; text-align: right;">Amount</span>
+            </div>
+            <div id="receiptItems"></div>
+        </div>
+
+        <!-- Summary -->
+        <div class="receipt-summary">
+            <div class="summary-row">
+                <span>Subtotal:</span>
+                <span id="receiptSubtotal">₹0.00</span>
+            </div>
+            <div class="summary-row">
+                <span>Tax (5%):</span>
+                <span id="receiptTax">₹0.00</span>
+            </div>
+            <div class="total-row">
+                <span>TOTAL:</span>
+                <span id="receiptTotal">₹0.00</span>
+            </div>
+        </div>
+
+        <!-- Payment Method -->
+        <div class="payment-method">
+            <strong>Payment: <span id="receiptPaymentMethod"></span></strong>
+        </div>
+
+        <!-- QR Code for Google Pay (if applicable) -->
+        <div id="qrCodeSection" class="qr-section" style="display: none;">
+            <div class="qr-label">Verify Payment with QR</div>
+            <div id="receiptQR"></div>
+        </div>
+
+        <!-- Footer -->
+        <div class="receipt-footer">
+            <p>Thank you for your business!</p>
+            <p>Please visit again</p>
+            <p id="receiptFooterTime"></p>
+        </div>
+
+        <div class="thank-you">
+            ❤️ Thanks! ❤️
+        </div>
+    </div>
+
+    <script src="js/cart.js"></script>
+    <script>
+        function generateReceipt() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const txnId = urlParams.get('txn');
+            
+            if(!txnId) {
+                document.body.innerHTML = '<h1>No transaction found</h1>';
+                return;
+            }
+
+            const transactions = JSON.parse(localStorage.getItem('transactions')) || [];
+            const transaction = transactions.find(t => t.id === txnId);
+
+            if(!transaction) {
+                document.body.innerHTML = '<h1>Transaction not found</h1>';
+                return;
+            }
+
+            // Populate receipt
+            const currentUser = localStorage.getItem('currentUser');
+            const dateTime = new Date(transaction.timestamp);
+            
+            document.getElementById('receiptRestaurant').textContent = 'Receipt';
+            document.getElementById('receiptTxnId').textContent = transaction.id;
+            document.getElementById('receiptDate').textContent = dateTime.toLocaleDateString('en-IN');
+            document.getElementById('receiptTime').textContent = dateTime.toLocaleTimeString('en-IN');
+            document.getElementById('receiptUser').textContent = transaction.user;
+
+            // Items
+            let itemsHTML = '';
+            transaction.items.forEach(item => {
+                itemsHTML += `
+                    <div class="item-row">
+                        <span class="item-name">${item.name}</span>
+                        <span class="item-qty">${item.quantity}</span>
+                        <span class="item-price">₹${(item.price * item.quantity).toFixed(2)}</span>
+                    </div>
+                `;
+            });
+            document.getElementById('receiptItems').innerHTML = itemsHTML;
+
+            // Summary
+            document.getElementById('receiptSubtotal').textContent = `₹${transaction.subtotal.toFixed(2)}`;
+            document.getElementById('receiptTax').textContent = `₹${transaction.tax.toFixed(2)}`;
+            document.getElementById('receiptTotal').textContent = `₹${transaction.total.toFixed(2)}`;
+
+            // Payment Method
+            const paymentMethods = {
+                'card': '💳 Card Payment',
+                'cash': '💵 Cash Payment',
+                'googlepay': '📱 Google Pay'
+            };
+            document.getElementById('receiptPaymentMethod').textContent = 
+                paymentMethods[transaction.paymentMethod] || transaction.paymentMethod;
+
+            // Footer time
+            document.getElementById('receiptFooterTime').textContent = 
+                `Served at: ${dateTime.toLocaleTimeString('en-IN')}`;
+
+            // QR Code section (if payment method is not google pay, don't show)
+            // For Google Pay, we could show verification QR
+            if(transaction.paymentMethod === 'googlepay') {
+                document.getElementById('qrCodeSection').style.display = 'block';
+                // Generate a simple reference QR
+                const qrData = `Payment verified: ${transaction.id} - Amount: ₹${transaction.total.toFixed(2)}`;
+                new QRCode(document.getElementById('receiptQR'), {
+                    text: qrData,
+                    width: 80,
+                    height: 80,
+                    colorDark: "#000000",
+                    colorLight: "#ffffff",
+                    correctLevel: QRCode.CorrectLevel.H
+                });
+            }
+        }
+
+        window.addEventListener('load', generateReceipt);
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+</body>
+</html>
